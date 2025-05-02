@@ -1,0 +1,32 @@
+import pandas as pd
+titanic_original = pd.read_csv('tested.csv')
+df1 = titanic_original.copy()
+df1.head()
+df1 = df1[['Pclass','Sex','Age','Fare','Cabin','Survived']]
+df1.head()
+df1.dropna(subset=['Age','Fare'],inplace=True)
+df1.isna().sum()
+df1['Cabin'].fillna('Unknown',inplace = True)
+df1.isna().sum()
+df1['Sex']=df1['Sex'].map({'male':0,'female':1})
+df1.head()
+df1.drop('Cabin',axis=1,inplace=True)
+from sklearn.model_selection import train_test_split
+X = df1.iloc[:,:-1]
+y = df1.iloc[:,-1]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+from sklearn.ensemble import RandomForestClassifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+from sklearn.metrics import accuracy_score as acc
+print(acc(y_test,y_pred))
+import numpy as np
+new_passenger = pd.DataFrame([{
+    'Pclass': 3,
+    'Sex': 0,
+    'Age': 25,
+    'Fare': 7.25
+}])
+prediction = model.predict(new_passenger)
+print("Survived" if prediction[0] == 1 else "Did not survive")
