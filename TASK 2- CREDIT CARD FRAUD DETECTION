@@ -1,0 +1,98 @@
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+df = pd.read_csv('creditcard.csv')
+df.head()
+df.isna().sum()
+X = df.drop(columns=['Class','Amount'],axis=1)
+y = df['Class']
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+print(y.value_counts())
+# Model training
+model = RandomForestClassifier(class_weight="balanced", random_state=42)
+model.fit(X_train,y_train)
+ypred = model.predict(X_test)
+from sklearn.metrics import accuracy_score as acc
+print(acc(y_test,ypred))
+from sklearn.metrics import classification_report
+
+print(classification_report(y_test, ypred, digits=4))
+from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+# First, split your dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.3, random_state=42)
+
+# Apply SMOTE only to training data
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
+print("Before SMOTE:", y_train.value_counts())
+print("After SMOTE:", y_train_smote.value_counts())
+model_smote = RandomForestClassifier(random_state=42)
+model_smote.fit(X_train_smote, y_train_smote)
+# Predict
+y_pred = model_smote.predict(X_test)
+y_pred_proba = model_smote.predict_proba(X_test)[:, 1]
+
+# Evaluation
+print(classification_report(y_test, y_pred, digits=4))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("ROC AUC Score:", roc_auc_score(y_test, y_pred_proba))
+
+
+
+OUTPUT:
+
+
+
+Class
+0    284315
+1       492
+
+accuracy:
+
+0.9995611109160493
+
+ precision    recall  f1-score   support
+
+           0     0.9996    1.0000    0.9998     56864
+           1     0.9867    0.7551    0.8555        98
+
+    accuracy                         0.9996     56962
+   macro avg     0.9931    0.8775    0.9276     56962
+weighted avg     0.9996    0.9996    0.9995     56962
+
+
+after SMOTE:
+
+
+Before SMOTE: Class
+0    199020
+1       344
+Name: count, dtype: int64
+After SMOTE: Class
+0    199020
+1    199020
+Name: count, dtype: int64
+
+
+
+precision    recall  f1-score   support
+
+           0     0.9996    0.9998    0.9997     85295
+           1     0.8788    0.7838    0.8286       148
+
+    accuracy                         0.9994     85443
+   macro avg     0.9392    0.8918    0.9141     85443
+weighted avg     0.9994    0.9994    0.9994     85443
+
+Confusion Matrix:
+ [[85279    16]
+ [   32   116]]
+ROC AUC Score: 0.9559958839195606
